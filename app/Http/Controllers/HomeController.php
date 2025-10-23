@@ -21,8 +21,8 @@ class HomeController extends Controller
                     ->orderBy('created_at', 'desc')
                     ->paginate(12);
         
-        // Load latest public events with their communities
-        $events = Event::with('communities')
+        // Load latest public events with their communities and community members
+        $events = Event::with(['communities.communityMembers'])
             ->where('is_public', true)
             ->orderBy('start_date', 'desc')
             ->take(6)
@@ -35,5 +35,24 @@ class HomeController extends Controller
     {
         // Permettre aux visiteurs de voir les détails d'un livre
         return view('books.show-public', compact('book'));
+    }
+
+    /**
+     * Display the specified event.
+     *
+     * @param  \App\Models\Event  $event
+     * @return \Illuminate\View\View
+     */
+    public function showEvent(Event $event)
+    {
+        // Eager load relationships if needed
+        $event->load('communities');
+        
+        // Check if the event is public or the user is authenticated
+        if (!$event->is_public && !auth()->check()) {
+            abort(403, 'This event is private.');
+        }
+        
+        return view('events.upcoming_event_details', compact('event'));
     }
 }

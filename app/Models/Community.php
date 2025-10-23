@@ -13,22 +13,32 @@ class Community extends Model
 
     protected $guarded = [];
 
-    protected $casts = [
-        'is_public' => 'boolean',
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'cover_image',
+        'is_public',
+        'members',
+        'created_by'
     ];
 
-    public function members(): BelongsToMany
+    protected $casts = [
+        'is_public' => 'boolean',
+        'members' => 'integer',
+    ];
+
+    // Renamed to avoid conflict with the members count column
+    public function communityMembers(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
             ->withPivot(['role'])
             ->withTimestamps();
     }
 
-    public function admins(): BelongsToMany
+    public function admins()
     {
-        return $this->belongsToMany(User::class)
-            ->withPivot(['role'])
-            ->wherePivot('role', 'admin');
+        return $this->communityMembers()->wherePivot('role', 'admin');
     }
 
     public function events(): BelongsToMany

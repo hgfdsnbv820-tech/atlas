@@ -45,6 +45,13 @@ Route::patch('/reviews/{review}/flag', [ReviewController::class, 'flag'])->name(
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('/livre/{book}', [App\Http\Controllers\HomeController::class, 'show'])->name('book.show');
+Route::get('/home/events/{event}', [App\Http\Controllers\HomeController::class, 'showEvent'])->name('home.events.show');
+
+// Community join/leave routes for web (session-based auth)
+Route::middleware('auth')->group(function () {
+    Route::post('/communities/{community}/join', [App\Http\Controllers\CommunityController::class, 'join'])->name('communities.join');
+    Route::post('/communities/{community}/leave', [App\Http\Controllers\CommunityController::class, 'leave'])->name('communities.leave');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', Register::class)->name('register');
@@ -132,5 +139,6 @@ Route::get('/communities/{community}', \App\Http\Livewire\Communities\ShowCommun
     ->name('communities.show');
 
 // Public Event details route (allow guests to view an event's page)
-Route::get('/events/{id}', \App\Http\Livewire\Events\ShowEvent::class)
+// Using route model binding with the Livewire component
+Route::get('/events/{event}', \App\Http\Livewire\Events\ShowEvent::class)
     ->name('events.show');

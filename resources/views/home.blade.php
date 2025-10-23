@@ -492,7 +492,7 @@
             @if (!empty($events) && $events->count())
                 @foreach ($events as $event)
                     <div class="item">
-                        <a href="{{ route('events.show', $event->id) }}">
+                        <a href="{{ route('home.events.show', $event) }}">
                             <img src="{{ $event->thumbnail ? Storage::url($event->thumbnail) : asset('assets/img/home/images/img1.png') }}" class="img" alt="{{ $event->title }}">
                         </a>
                         <div class="content">
@@ -502,7 +502,7 @@
                             <div class="des">{{ \Illuminate\Support\Str::limit($event->description, 140) }}</div>
                             <div class="buttons">
                                 <a href="#events" class="btn">See Events</a>
-                                <a href="{{ route('events.show', $event->id) }}" class="btn">Details</a>
+                                <a href="{{ route('home.events.show', $event) }}" class="btn">Details</a>
                             </div>
                         </div>
                     </div>
@@ -569,7 +569,7 @@
                 @foreach($events as $event)
                     <div class="event-card">
                         <div class="event-image-container">
-                            <a href="{{ route('events.show', $event->id) }}">
+                            <a href="{{ route('home.events.show', $event) }}">
                                 <img src="{{ $event->thumbnail ? Storage::url($event->thumbnail) : asset('assets/img/curved-images/curved14.jpg') }}"
                                      alt="{{ $event->title ?? 'Event' }}"
                                  class="event-image"
@@ -602,7 +602,7 @@
                             </div>
                             
                             <div class="flex gap-2 mt-4">
-                                <a href="{{ route('events.show', $event->id) }}" class="event-button">
+                                <a href="{{ route('home.events.show', $event) }}" class="event-button">
                                     <i class="fas fa-calendar-alt mr-2"></i>
                                     View Details
                                 </a>
@@ -623,28 +623,54 @@
                                         </button>
                                     </div>
                                     @if($event->communities && $event->communities->count())
-                                        <ul class="space-y-2">
+                                        <ul class="space-y-3">
                                             @foreach($event->communities as $community)
-                                                <li>
-                                                    <a href="{{ route('communities.show', $community) }}" 
-                                                       class="flex items-center gap-3 p-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors cursor-pointer">
+                                                <li class="border border-gray-200 rounded-lg p-3" id="community-item-{{ $community->id }}">
+                                                    <div class="flex items-start gap-3">
                                                         @if($community->cover_image)
                                                             <img src="{{ asset('storage/' . $community->cover_image) }}" alt="{{ $community->name }}"
-                                                                 class="w-10 h-10 rounded object-cover">
+                                                                 class="w-12 h-12 rounded object-cover flex-shrink-0">
                                                         @else
-                                                            <div class="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
+                                                            <div class="w-12 h-12 rounded bg-gray-200 flex items-center justify-center flex-shrink-0">
                                                                 <i class="fas fa-users text-gray-400"></i>
                                                             </div>
                                                         @endif
-                                                        <div>
-                                                            <div class="font-medium">{{ $community->name }}</div>
-                                                            @if($community->is_public)
-                                                                <span class="text-xs text-green-600">Public Community</span>
-                                                            @else
-                                                                <span class="text-xs text-gray-600">Private Community</span>
-                                                            @endif
+                                                        <div class="flex-grow">
+                                                            <a href="{{ route('communities.show', $community) }}" class="font-medium hover:text-blue-600">{{ $community->name }}</a>
+                                                            <div class="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                                                                @if($community->is_public)
+                                                                    <span class="text-green-600"><i class="fas fa-globe"></i> Public</span>
+                                                                @else
+                                                                    <span><i class="fas fa-lock"></i> Private</span>
+                                                                @endif
+                                                                <span id="member-count-{{ $community->id }}">
+                                                                    <i class="fas fa-user"></i> {{ $community->members }} members
+                                                                </span>
+                                                            </div>
+                                                            <div class="mt-2 flex gap-2">
+                                                                @auth
+                                                                    @php
+                                                                        $isMember = $community->communityMembers->contains(auth()->id());
+                                                                    @endphp
+                                                                    @if($isMember)
+                                                                        <a href="{{ route('communities.show', $community) }}" class="text-xs px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                                                            <i class="fas fa-comments"></i> Join Discussion
+                                                                        </a>
+                                                                    @else
+                                                                        <button onclick="joinCommunity({{ $community->id }}, '{{ $community->slug }}')" 
+                                                                                id="join-btn-{{ $community->id }}"
+                                                                                class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                                                            <i class="fas fa-user-plus"></i> Join Community
+                                                                        </button>
+                                                                    @endif
+                                                                @else
+                                                                    <a href="{{ route('login') }}" class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                                                        <i class="fas fa-sign-in-alt"></i> Login to Join
+                                                                    </a>
+                                                                @endauth
+                                                            </div>
                                                         </div>
-                                                    </a>
+                                                    </div>
                                                 </li>
                                             @endforeach
                                         </ul>
@@ -891,6 +917,63 @@
                     }
                 });
             });
+
+            // Join Community function
+            async function joinCommunity(communityId, communitySlug) {
+                const button = document.getElementById('join-btn-' + communityId);
+                const originalText = button.innerHTML;
+                
+                // Disable button and show loading state
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Joining...';
+                
+                try {
+                    const response = await fetch('/communities/' + communitySlug + '/join', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    });
+                    
+                    if (response.ok) {
+                        // Update member count
+                        const memberCountSpan = document.getElementById('member-count-' + communityId);
+                        const currentCount = parseInt(memberCountSpan.textContent.match(/\d+/)[0]);
+                        memberCountSpan.innerHTML = '<i class="fas fa-user"></i> ' + (currentCount + 1) + ' members';
+                        
+                        // Replace button with "Join Discussion" link
+                        const buttonContainer = button.parentElement;
+                        buttonContainer.innerHTML = '<a href="/communities/' + communitySlug + '" class="text-xs px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"><i class="fas fa-comments"></i> Join Discussion</a>';
+                        
+                        // Show success message
+                        showNotification('Successfully joined the community!', 'success');
+                    } else {
+                        throw new Error('Failed to join community');
+                    }
+                } catch (error) {
+                    console.error('Error joining community:', error);
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                    showNotification('Failed to join community. Please try again.', 'error');
+                }
+            }
+            
+            // Show notification function
+            function showNotification(message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white transition-all ' + 
+                    (type === 'success' ? 'bg-green-500' : 'bg-red-500');
+                notification.innerHTML = '<i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + ' mr-2"></i>' + message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
 
             function openBorrowModal(bookId, bookTitle, bookAuthor) {
                 document.getElementById('modal_book_id').value = bookId;

@@ -12,9 +12,9 @@ class ShowEvent extends Component
     public $event;
     public $organizer;
 
-    public function mount($id)
+    public function mount($event)
     {
-        $event = Event::findOrFail($id);
+        $event = Event::findOrFail($event);
 
         // Authorization: allow guests to view public events via policy
         if (Gate::denies('view', $event)) {
