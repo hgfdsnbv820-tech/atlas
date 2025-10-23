@@ -84,16 +84,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/user-profile', UserProfile::class)->name('user-profile');
     Route::get('/user-management', UserManagement::class)->name('user-management');
     
-    // Communities page
-    Route::get('/communities', function() {
-        return view('communities.index');
-    })->name('communities.index');
-    
-    // Community page (singular)
+    // Community management (requires auth)
     Route::get('/community', Community::class)->name('community.index');
     Route::get('/community/create', CreateCommunity::class)->name('community.create');
     Route::get('/community/{id}/edit', EditCommunity::class)->name('community.edit');
-    Route::get('/communities/{community}', \App\Http\Livewire\Communities\ShowCommunity::class)->name('communities.show');
     
     // Books CRUD
     Route::resource('books', \App\Http\Controllers\BookController::class);
@@ -131,6 +125,11 @@ Route::middleware('auth')->group(function () {
 
 // Route de test pour BorrowRequest
 Route::get('/test-borrow-request', [BorrowRequestTestController::class, 'test']);
+
+// Public pages
+// Community details should be public
+Route::get('/communities/{community}', \App\Http\Livewire\Communities\ShowCommunity::class)
+    ->name('communities.show');
 
 // Public Event details route (allow guests to view an event's page)
 Route::get('/events/{id}', \App\Http\Livewire\Events\ShowEvent::class)

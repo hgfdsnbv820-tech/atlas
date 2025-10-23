@@ -82,7 +82,7 @@
                                     @endif
                                 </td>
                                 <td class="py-3 text-right">
-                                    <a href="#" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm mr-2">
+                                    <a href="{{ route('communities.show', $community) }}" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm mr-2">
                                         <i class="fas fa-eye mr-1"></i>View
                                     </a>
                                     <a href="{{ route('community.edit', $community->id) }}" class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm mr-2">

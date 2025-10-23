@@ -52,7 +52,7 @@
                                 @if($event->communities && $event->communities->count())
                                     <div class="flex flex-wrap gap-2">
                                         @foreach($event->communities as $c)
-                                            <a href="{{ route('communities.show', $c->id) }}" class="px-2 py-1 bg-gray-100 rounded text-sm hover:bg-gray-200 transition cursor-pointer">{{ $c->name }}</a>
+                                            <a href="{{ route('communities.show', $c) }}" class="px-2 py-1 bg-gray-100 rounded text-sm hover:bg-gray-200 transition cursor-pointer">{{ $c->name }}</a>
                                         @endforeach
                                     </div>
                                 @else

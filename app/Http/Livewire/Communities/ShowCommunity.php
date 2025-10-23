@@ -29,6 +29,6 @@ class ShowCommunity extends Component
         return view('livewire.communities.show-community', [
             'members' => $this->community->members,
             'events' => $this->community->events
-        ])->layout('layouts.app');
+        ])->layout('layouts.base');
     }
 }
