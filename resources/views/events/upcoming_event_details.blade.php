@@ -137,11 +137,17 @@
             <div class="event-meta">
                 <div class="event-meta-item">
                     <i class="far fa-calendar-alt"></i>
-                    <span>{{ $event->start_date->format('F j, Y') }}</span>
+                    <span>{{ optional($event->start_date)->format('F j, Y') ?? 'Date TBA' }}</span>
                 </div>
                 <div class="event-meta-item">
                     <i class="far fa-clock"></i>
-                    <span>{{ $event->start_date->format('g:i A') }} - {{ $event->end_date->format('g:i A') }}</span>
+                    <span>
+                        @if($event->start_date)
+                            {{ $event->start_date->format('g:i A') }}@if($event->end_date) - {{ $event->end_date->format('g:i A') }} @endif
+                        @else
+                            Time TBA
+                        @endif
+                    </span>
                 </div>
                 @if($event->location)
                 <div class="event-meta-item">
@@ -183,11 +189,17 @@
                     <div class="space-y-4">
                         <div>
                             <div class="text-sm font-medium text-gray-500">Date</div>
-                            <div>{{ $event->start_date->format('l, F j, Y') }}</div>
+                            <div>{{ optional($event->start_date)->format('l, F j, Y') ?? 'Date TBA' }}</div>
                         </div>
                         <div>
                             <div class="text-sm font-medium text-gray-500">Time</div>
-                            <div>{{ $event->start_date->format('g:i A') }} - {{ $event->end_date->format('g:i A') }}</div>
+                            <div>
+                                @if($event->start_date)
+                                    {{ $event->start_date->format('g:i A') }}@if($event->end_date) - {{ $event->end_date->format('g:i A') }} @endif
+                                @else
+                                    Time TBA
+                                @endif
+                            </div>
                         </div>
                         @if($event->location)
                         <div>

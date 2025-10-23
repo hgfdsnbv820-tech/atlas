@@ -15,6 +15,11 @@ class Event extends Model
         'id', 'organizer_id', 'title', 'description', 'location', 'thumbnail', 'start_date', 'end_date', 'max_participants', 'is_public', 'status'
     ];
 
+    protected $casts = [
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+    ];
+
     protected static function booted()
     {
         static::creating(function ($model) {
