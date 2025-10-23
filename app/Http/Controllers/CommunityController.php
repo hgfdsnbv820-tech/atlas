@@ -15,6 +15,9 @@ class CommunityController extends Controller
     {
         $user = Auth::user();
         
+        // Authorize the action
+        $this->authorize('join', $community);
+        
         // Check if user is already a member
         if (!$community->communityMembers()->where('user_id', $user->id)->exists()) {
             // Increment the members count
@@ -35,6 +38,9 @@ class CommunityController extends Controller
     public function leave(Community $community)
     {
         $user = Auth::user();
+        
+        // Authorize the action
+        $this->authorize('leave', $community);
 
         // Check if user is a member
         if ($community->communityMembers()->where('user_id', $user->id)->exists()) {

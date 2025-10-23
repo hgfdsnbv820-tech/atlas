@@ -30,7 +30,7 @@ class CommunityPolicy
         if ($user === null) {
             return false;
         }
-        return $community->members()->where('users.id', $user->id)->exists();
+        return $community->communityMembers()->where('users.id', $user->id)->exists();
     }
 
     public function create(?User $user): bool
