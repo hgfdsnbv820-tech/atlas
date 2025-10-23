@@ -64,4 +64,24 @@ class Community extends Model
     {
         return 'slug';
     }
+
+    /**
+     * Allow resolving by slug (preferred) or falling back to ID.
+     * This lets URLs like /communities/my-slug and /communities/123 both work.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        // Try slug first (default behavior)
+        $bySlug = $this->newQuery()->where('slug', $value)->first();
+        if ($bySlug) {
+            return $bySlug;
+        }
+
+        // Fall back to ID when a numeric value is provided
+        if (is_numeric($value)) {
+            return $this->newQuery()->where('id', (int) $value)->first();
+        }
+
+        return null;
+    }
 }
