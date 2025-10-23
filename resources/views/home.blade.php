@@ -656,6 +656,11 @@
                                                                         <a href="{{ route('communities.show', $community) }}" class="text-xs px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
                                                                             <i class="fas fa-comments"></i> Join Discussion
                                                                         </a>
+                                                                        <button onclick="joinCommunity({{ $community->id }}, '{{ $community->slug }}')" 
+                                                                                id="join-btn-{{ $community->id }}"
+                                                                                class="text-xs px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
+                                                                            <i class="fas fa-user-minus"></i> Leave Community
+                                                                        </button>
                                                                     @else
                                                                         <button onclick="joinCommunity({{ $community->id }}, '{{ $community->slug }}')" 
                                                                                 id="join-btn-{{ $community->id }}"
@@ -918,14 +923,15 @@
                 });
             });
 
-            // Join Community function
+            // Toggle Community Membership (Join/Leave)
             async function joinCommunity(communityId, communitySlug) {
                 const button = document.getElementById('join-btn-' + communityId);
                 const originalText = button.innerHTML;
+                const isJoining = button.classList.contains('bg-blue-600');
                 
                 // Disable button and show loading state
                 button.disabled = true;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Joining...';
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (isJoining ? 'Joining...' : 'Leaving...');
                 
                 try {
                     const response = await fetch('/communities/' + communitySlug + '/join', {
@@ -938,26 +944,40 @@
                         credentials: 'same-origin'
                     });
                     
+                    const data = await response.json();
+                    
                     if (response.ok) {
                         // Update member count
                         const memberCountSpan = document.getElementById('member-count-' + communityId);
-                        const currentCount = parseInt(memberCountSpan.textContent.match(/\d+/)[0]);
-                        memberCountSpan.innerHTML = '<i class="fas fa-user"></i> ' + (currentCount + 1) + ' members';
+                        memberCountSpan.innerHTML = '<i class="fas fa-user"></i> ' + data.member_count + ' members';
                         
-                        // Replace button with "Join Discussion" link
-                        const buttonContainer = button.parentElement;
-                        buttonContainer.innerHTML = '<a href="/communities/' + communitySlug + '" class="text-xs px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"><i class="fas fa-comments"></i> Join Discussion</a>';
-                        
-                        // Show success message
-                        showNotification('Successfully joined the community!', 'success');
+                        if (data.is_member) {
+                            // User just joined - show "Join Discussion" link
+                            const buttonContainer = button.parentElement;
+                            buttonContainer.innerHTML = '<a href="/communities/' + communitySlug + '" class="text-xs px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"><i class="fas fa-comments"></i> Join Discussion</a>';
+                            showNotification('Successfully joined the community! Check your email for details.', 'success');
+                        } else {
+                            // User just left - show "Join Community" button
+                            button.classList.remove('bg-red-600', 'hover:bg-red-700');
+                            button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                            button.innerHTML = '<i class="fas fa-user-plus"></i> Join Community';
+                            button.disabled = false;
+                            showNotification('Successfully left the community.', 'success');
+                        }
                     } else {
-                        throw new Error('Failed to join community');
+                        if (response.status === 422) {
+                            showNotification(data.message, 'error');
+                        } else {
+                            throw new Error('Failed to toggle community membership');
+                        }
+                        button.disabled = false;
+                        button.innerHTML = originalText;
                     }
                 } catch (error) {
-                    console.error('Error joining community:', error);
+                    console.error('Error toggling community membership:', error);
                     button.disabled = false;
                     button.innerHTML = originalText;
-                    showNotification('Failed to join community. Please try again.', 'error');
+                    showNotification('Failed to update community membership. Please try again.', 'error');
                 }
             }
             

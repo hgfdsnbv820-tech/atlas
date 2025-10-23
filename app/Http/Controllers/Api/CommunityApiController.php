@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Community;
+use App\Notifications\CommunityJoined;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Gate;
@@ -91,11 +92,51 @@ class CommunityApiController extends Controller
         $this->authorize('join', $community);
         $user = Auth::user();
 
-        if (!$community->communityMembers()->where('users.id', $user->id)->exists()) {
-            $community->communityMembers()->attach($user->id, ['role' => 'member']);
-        }
+        // Check if user is already a member
+        $isMember = $community->communityMembers()->where('users.id', $user->id)->exists();
+        
+        if ($isMember) {
+            // User is already a member, so leave the community
+            
+            // Check if user is an admin
+            $isAdmin = $community->admins()->where('users.id', $user->id)->exists();
+            
+            if ($isAdmin) {
+                $adminCount = $community->admins()->count();
+                if ($adminCount <= 1) {
+                    return response()->json([
+                        'message' => 'Cannot leave as the last admin',
+                        'is_member' => true
+                    ], 422);
+                }
+            }
 
-        return response()->json(['message' => 'Joined']);
+            // Decrement members count and remove user
+            $community->decrement('members');
+            $community->communityMembers()->detach($user->id);
+            
+            return response()->json([
+                'message' => 'Successfully left the community',
+                'member_count' => $community->members,
+                'is_member' => false
+            ], 200);
+        } else {
+            // User is not a member, so join the community
+            
+            // Increment the members count
+            $community->increment('members');
+            // Add user to community members
+            $community->communityMembers()->attach($user->id, ['role' => 'member']);
+            
+            // Send email notification
+            $user->notify(new CommunityJoined($community));
+            
+            return response()->json([
+                'message' => 'Successfully joined the community',
+                'member_count' => $community->members,
+                'is_member' => true
+            ], 200);
+        }
     }
 
     public function leave(Community $community)
@@ -103,17 +144,28 @@ class CommunityApiController extends Controller
         $this->authorize('leave', $community);
         $user = Auth::user();
 
-        // Prevent last admin from leaving if they are the only admin
-        $isAdmin = $community->admins()->where('users.id', $user->id)->exists();
-        if ($isAdmin) {
-            $adminCount = $community->admins()->count();
-            if ($adminCount <= 1) {
-                return response()->json(['message' => 'Cannot leave as the last admin'], 422);
+        // Check if user is a member
+        if ($community->communityMembers()->where('users.id', $user->id)->exists()) {
+            // Check if user is an admin
+            $isAdmin = $community->admins()->where('users.id', $user->id)->exists();
+            
+            if ($isAdmin) {
+                $adminCount = $community->admins()->count();
+                if ($adminCount <= 1) {
+                    return response()->json([
+                        'message' => 'Cannot leave as the last admin'
+                    ], 422);
+                }
             }
+
+            // Decrement members count and remove user
+            $community->decrement('members');
+            $community->communityMembers()->detach($user->id);
         }
 
-        $community->communityMembers()->detach($user->id);
-
-        return response()->json(['message' => 'Left']);
+        return response()->json([
+            'message' => 'Successfully left the community',
+            'member_count' => $community->members
+        ], 200);
     }
 }
