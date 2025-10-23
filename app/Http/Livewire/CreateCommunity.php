@@ -57,7 +57,7 @@ class CreateCommunity extends Component
         ]);
 
         // Add creator as admin member
-        $community->members()->attach(Auth::id(), ['role' => 'admin']);
+        $community->communityMembers()->attach(Auth::id(), ['role' => 'admin']);
 
     // load associated events (none at creation)
     $this->associatedEvents = [];

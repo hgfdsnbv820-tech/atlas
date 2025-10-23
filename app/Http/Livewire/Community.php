@@ -68,7 +68,7 @@ class Community extends Component
     public function render()
     {
         return view('livewire.community', [
-            'communities' => CommunityModel::withCount('members')->with('events')->orderBy('name')->paginate(10),
+            'communities' => CommunityModel::withCount('communityMembers')->with('events')->orderBy('name')->paginate(10),
         ]);
     }
 }

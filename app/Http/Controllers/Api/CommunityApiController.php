@@ -32,7 +32,7 @@ class CommunityApiController extends Controller
     public function show(Community $community)
     {
         $this->authorize('view', $community);
-        return response()->json($community->loadCount('members'));
+        return response()->json($community->loadCount('communityMembers'));
     }
 
     public function store(Request $request)
@@ -53,7 +53,7 @@ class CommunityApiController extends Controller
         $community = Community::create($data);
 
         // Add creator as admin member
-        $community->members()->attach(Auth::id(), ['role' => 'admin']);
+        $community->communityMembers()->attach(Auth::id(), ['role' => 'admin']);
 
         return response()->json($community, 201);
     }
@@ -91,8 +91,8 @@ class CommunityApiController extends Controller
         $this->authorize('join', $community);
         $user = Auth::user();
 
-        if (!$community->members()->where('users.id', $user->id)->exists()) {
-            $community->members()->attach($user->id, ['role' => 'member']);
+        if (!$community->communityMembers()->where('users.id', $user->id)->exists()) {
+            $community->communityMembers()->attach($user->id, ['role' => 'member']);
         }
 
         return response()->json(['message' => 'Joined']);
@@ -112,7 +112,7 @@ class CommunityApiController extends Controller
             }
         }
 
-        $community->members()->detach($user->id);
+        $community->communityMembers()->detach($user->id);
 
         return response()->json(['message' => 'Left']);
     }
