@@ -16,7 +16,7 @@ class ShowCommunity extends Component
     {
         $this->community = $community->load(['events' => function($query) {
             $query->orderBy('start_date', 'desc');
-        }, 'members']);
+        }, 'communityMembers', 'messages']);
     }
 
     public function toggleMembersModal()
@@ -27,7 +27,7 @@ class ShowCommunity extends Component
     public function render()
     {
         return view('livewire.communities.show-community', [
-            'members' => $this->community->members,
+            'members' => $this->community->communityMembers,
             'events' => $this->community->events
         ])->layout('layouts.base');
     }
