@@ -56,4 +56,12 @@ class Community extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    /**
+     * Use the slug for route model binding.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 }

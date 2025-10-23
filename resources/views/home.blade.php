@@ -626,7 +626,7 @@
                                         <ul class="space-y-2">
                                             @foreach($event->communities as $community)
                                                 <li>
-                                                    <a href="{{ route('communities.show', $community->id) }}" 
+                                                    <a href="{{ route('communities.show', $community) }}" 
                                                        class="flex items-center gap-3 p-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors cursor-pointer">
                                                         @if($community->cover_image)
                                                             <img src="{{ asset('storage/' . $community->cover_image) }}" alt="{{ $community->name }}"
