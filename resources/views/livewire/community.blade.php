@@ -67,7 +67,7 @@
                                     </td>
                                 <td class="py-3">
                                     <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
-                                        {{ $community->members_count ?? 0 }}
+                                        {{ $community->members ?? 0 }}
                                     </span>
                                 </td>
                                 <td class="py-3">
