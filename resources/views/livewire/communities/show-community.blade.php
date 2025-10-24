@@ -32,7 +32,7 @@
                 <dt class="text-base font-normal text-gray-900">Members</dt>
                 <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
                     <div class="flex items-baseline text-2xl font-semibold text-indigo-600">
-                        {{ $community->members->count() }}
+                        {{ $community->communityMembers->count() }}
                     </div>
                 </dd>
             </dl>
