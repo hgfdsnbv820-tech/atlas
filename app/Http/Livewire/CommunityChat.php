@@ -35,7 +35,8 @@ class CommunityChat extends Component
             ->with('user')
             ->orderBy('created_at', 'asc')
             ->take(100)
-            ->get();
+            ->get()
+            ->toArray();
     }
 
     public function sendMessage()
