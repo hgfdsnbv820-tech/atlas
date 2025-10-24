@@ -5,7 +5,7 @@
             <i class="fas fa-comments text-white text-xl"></i>
             <h3 class="text-lg font-semibold text-white">Community Chat</h3>
             <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                {{ $messages->count() }} messages
+                {{ count($messages) }} messages
             </span>
         </div>
         <button wire:click="toggleChat" class="text-white hover:text-gray-200 transition-colors">
